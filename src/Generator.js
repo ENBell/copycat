@@ -9,7 +9,8 @@ class Generator {
     get rules() {
         return {
             beforeAll: [
-                `await page.goto('${this.initURL}');`
+                // `await page.goto('${this.initURL}');`
+                `[`
             ]
         }
     }
@@ -25,20 +26,20 @@ class Generator {
             var rules = this.rules[key];
             switch (key) {
                 case 'beforeAll':
-                    this.code += `beforeAll(async () => {`;
+                    // this.code += `beforeAll(async () => {`;
                     this.addRulesInner(rules);
-                    this.code += `});`;
+                    // this.code += `});`;
                     break;
-                case 'afterAll':
-                    this.code += `afterAll(async () => {`;
-                    this.addRulesInner(rules);
-                    this.code += `});`;
-                    break;
-                case 'beforeEach':
-                    this.code += `beforeEach(async () => {`;
-                    this.addRulesInner(rules);
-                    this.code += `};`;
-                    break;
+                // case 'afterAll':
+                //     this.code += `afterAll(async () => {`;
+                //     this.addRulesInner(rules);
+                //     this.code += `});`;
+                //     break;
+                // case 'beforeEach':
+                //     this.code += `beforeEach(async () => {`;
+                //     this.addRulesInner(rules);
+                //     this.code += `};`;
+                //     break;
             }
         }
     }
@@ -47,16 +48,17 @@ class Generator {
         if (command && command.type) {
             switch (command.type) {
                 case 'click':
-                    this.code += `await page.click('${command.selector}');`;
+                    this.code += `['${command.selector}','',''],`;  /*`await page.click('${command.selector}');`;*/
                     break;
                 case 'keydown':
                     if (keyCommands.includes(command.data.key)) {
-                        this.code += `await page.keyboard.press('${command.data.key}');`;
+                        //this.code += `await page.keyboard.press('${command.data.key}')`;
+                        this.code +=`['${command.selector}','special','${command.data.key}'],`
                     } else {
-                        this.code += `await page.type('${command.selector}', '${command.data.key}');`
+                        this.code += `['${command.selector}','','${command.data.key}'],`;
                     }
                     break;
-                case 'verify-text':
+                /*case 'verify-text':
                     this.code += `var textContent = await page.$$eval('${command.selector}', el => el[0].textContent);`;
                     this.code += `var finalTextContent = textContent.trim();`;
                     this.code += `expect(finalTextContent).toBe('${command.data.key}');`;
@@ -77,38 +79,40 @@ class Generator {
                     this.code += `page.click('${command.selector}'),`;
                     this.code += `page.waitForNavigation()]);`;
                     break;
+                */
                 case 'combined-keydown':
-                    command.data.commands.forEach(com => {
-                        this.code += `await page.keyboard.down('${com}');`
-                    });
-                    this.code += `await page.keyboard.press('${command.data.key.slice(-1)}');`;
-                    command.data.commands.forEach(com => {
-                        this.code += `await page.keyboard.up('${com}');`
-                    });
+                    // command.data.commands.forEach(com => {
+                    //     this.code += `await page.keyboard.down('${com}');`
+                    // });
+                    //this.code += `await page.keyboard.press('${command.data.key.slice(-1)}');`;
+                    this.code += `['${command.selector}','','${command.data.key.slice(-1)}'],`;
+                    // command.data.commands.forEach(com => {
+                    //     this.code += `await page.keyboard.up('${com}');`
+                    // });
                     break;
-                case 'drag-and-drop':
+                /*case 'drag-and-drop':
                     this.code += `await page.mouse.move(${command.data.mousePos.x},${command.data.mousePos.y});`;
                     this.code += `await page.mouse.down();`;
                     this.code += `await page.mouse.move(${command.data.mouseTarget.x},${command.data.mouseTarget.y});`;
                     this.code += `await page.mouse.up();`;
-                    break;
+                    break;*/
             }
         }
     }
 
     addIt(description, commands) {
-        this.code += `it('${description}', async () => {`;
+        // this.code += `[it('${description}', async () => {]`;
         commands.forEach(command => {
             this.addCommand(command);
         });
-        this.code += `}, 60000);`;
+        this.code += `]`;
     }
 
     addDescription(description, commands) {
-        this.code += `describe('${description}', () => {`;
+        //this.code += `describe('${description}', () => {`;
         this.addRules();
-        this.addIt('Test 1 - 1', commands);
-        this.code += `});`;
+        this.addIt('[', commands);
+        //this.code += `});`;
     }
 
 
